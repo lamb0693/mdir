@@ -49,7 +49,7 @@ int custom_alphasort(const struct dirent **a, const struct dirent **b) {
 }
 
 // 디렉토리의 파일 정보를 출력하는 함수
-int display_files(const char *directory, int print_start_idx, int highlighted_idx) {
+int display_files(const char *directory, int print_start_idx, int highlighted_idx, char *selected_filename, size_t filename_size) {
     struct dirent **filelist = NULL;
     int file_count = scandir(directory, &filelist, NULL, custom_alphasort);
 
@@ -90,6 +90,10 @@ int display_files(const char *directory, int print_start_idx, int highlighted_id
             // 하이라이트 처리
             if (file_idx == highlighted_idx) {
                 attron(A_REVERSE);
+            
+                // 선택된 파일 이름 저장
+                strncpy(selected_filename, filelist[file_idx]->d_name, filename_size - 1);
+                selected_filename[filename_size - 1] = '\0'; // 널 종단
             }
 
             //mvprintw(current_screenY, 0, ""); // 줄 시작 위치로 이동 출력
@@ -105,7 +109,7 @@ int display_files(const char *directory, int print_start_idx, int highlighted_id
 
     // 하단 라인 출력
     mvprintw(screen_height - 3, 0, "-------------------------------------------");
-    mvprintw(screen_height - 2, 0, "Quit(Q)  Copy(C)  Cut(X) Paste(V) View(L) Edit(E) Execute(R)");
+    mvprintw(screen_height - 2, 0, "Quit(Q)  Copy(C)  Cut(X) Paste(V)  Execute(Space Bar)");
     mvprintw(screen_height - 1, 0, "======================");
 
     // 메모리 해제
