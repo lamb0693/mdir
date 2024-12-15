@@ -1,29 +1,29 @@
 {
     "version": "2.0.0",
     "tasks": [
-        {
-            "label": "build",
-            "type": "shell",
-            "command": "/usr/bin/gcc",
-            "args": [
-                "-g",
-                "test.c",
-                "display.c",
-                "execute.c",
-                "-o",
-                "${fileDirname}/program",
-                "-lncursesw",
-                "-D_XOPEN_SOURCE=600",
-                "-D_DEFAULT_SOURCE"
-            ],
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
-            "problemMatcher": [
-                "$gcc"
-            ]
-        },
+        // {
+        //     "label": "build",
+        //     "type": "shell",
+        //     "command": "/usr/bin/gcc",
+        //     "args": [
+        //         "-g",
+        //         "test.c",
+        //         "display.c",
+        //         "execute.c",
+        //         "-o",
+        //         "${fileDirname}/program",
+        //         "-lncursesw",
+        //         "-D_XOPEN_SOURCE=600",
+        //         "-D_DEFAULT_SOURCE"
+        //     ],
+        //     "group": {
+        //         "kind": "build",
+        //         "isDefault": true
+        //     },
+        //     "problemMatcher": [
+        //         "$gcc"
+        //     ]
+        // },
         {
             "type": "cppbuild",
             "label": "C/C++: gcc 활성 파일 빌드",

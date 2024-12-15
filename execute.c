@@ -11,7 +11,9 @@
 #define MAX_FILENAME_LENGTH 256
 
 
-// return 99 -  directory moved
+// return 99 -  current_dir changed 
+// return 0 - error, current_dr not changed
+// retrun 1 - succeeded,  current_dir not changed
 int execute_command(char* current_dir, const char* selected_filename) {
     char new_path[1024];
 
@@ -53,36 +55,33 @@ int execute_command(char* current_dir, const char* selected_filename) {
                     strncpy(current_dir, new_path, MAX_DIR_LENGTH - 1);
                     current_dir[MAX_DIR_LENGTH - 1] = '\0';
                 }
-
-                // 인덱스 초기화  -- return 99ㅣ면 idx 둘다 초기화
-                // highlighted_idx = 0;
-                // print_start_idx = 0화
                 return 99;
-
             case S_IFREG: // 일반 파일인 경우
-                mvprintw(1, 0, "Selected file: %s", selected_filename);
-                getch();
-                // 여기서 일반 파일에 대한 처리 추가 가능
-                return 1;
-
+                if (file_stat.st_mode & S_IXUSR) {  // 실행파일  - 실행시키기
+                    clear();
+                    mvprintw(1, 0, "Selected = Executable file: %s", selected_filename);
+                    getch();
+                    return 1;
+                } else {  // 일반 파일 , 볼수 있으면 cat 해서 보여주기
+                    clear();
+                    mvprintw(1, 0, "Selected = file: %s", selected_filename);
+                    getch();
+                    return 1;
+                }
             case S_IFLNK: // 심볼릭 링크
-                mvprintw(1, 0, "Selected symbolic link: %s", selected_filename);
+                clear();
+                mvprintw(1, 0, "Selected = symbolic link: %s", selected_filename);
                 // 심볼릭 링크 처리 추가 가능
                 getch();
                 return 1;
-
             default:
-                if (file_stat.st_mode & S_IXUSR) {
-                    mvprintw(1, 0, "Executable file: %s", selected_filename);
-                    getch();
-                    // 실행 파일 처리 추가 가능
-                } else {
-                    mvprintw(1, 0, "Unknown file type: %s", selected_filename);
-                    getch();
-                }
+                clear();
+                mvprintw(1, 0, "Selected = Unknown file type: %s", selected_filename);
+                getch();
                 return 1;
         }
     } else {
+        clear();
         mvprintw(1, 0, "Error reading file information: %s", selected_filename);
         getch();
     }
