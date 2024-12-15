@@ -5,7 +5,11 @@
 #include <dirent.h>
 #include <sys/stat.h>
 #include <locale.h>
+#include <wchar.h>
 #include <ncurses.h>
+
+#define RESERVED_LINE_UPPER 5 // UI 화면 윗부분
+#define RESERVED_LINE_LOWER 3 // UI 화면 아랫부분
 
 // 문자열을 지정된 길이로 자르고 출력
 void print_trimmed(const char *str, int max_width) {
@@ -45,7 +49,7 @@ int custom_alphasort(const struct dirent **a, const struct dirent **b) {
 }
 
 // 디렉토리의 파일 정보를 출력하는 함수
-int display_files(const char *directory, int startline_idx, int highlighted_idx) {
+int display_files(const char *directory, int print_start_idx, int highlighted_idx) {
     struct dirent **filelist = NULL;
     int file_count = scandir(directory, &filelist, NULL, custom_alphasort);
 
@@ -66,14 +70,14 @@ int display_files(const char *directory, int startline_idx, int highlighted_idx)
     mvprintw(4, 0, "----------------------");
 
     // 파일 리스트 출력
-    int list_start = 5; // 파일 리스트 시작 줄 (헤더 이후)
-    int list_end = screen_height - 6; // 하단 메뉴와 구분선 고려
-    int j = list_start;
+    int print_start_screenY = RESERVED_LINE_UPPER; // 파일 리스트 시작 줄 (헤더 이후),  (0 부터 screen_hight -1)
+    int print_end_screenY = screen_height -  RESERVED_LINE_LOWER -1  ; // 하단 메뉴와 구분선 고려 (0부터 screen_height-1 기준)
+    int current_screenY = print_start_screenY;
 
-    for (int i = startline_idx; i < file_count && j < list_end; ++i, ++j) {
+    for (int file_idx = print_start_idx; file_idx < file_count && current_screenY <= print_end_screenY; file_idx++, current_screenY++) {
         struct stat file_stat;
         char filepath[1024];
-        snprintf(filepath, sizeof(filepath), "%s/%s", directory, filelist[i]->d_name);
+        snprintf(filepath, sizeof(filepath), "%s/%s", directory, filelist[file_idx]->d_name);
 
         // 파일 정보 가져오기
         if (stat(filepath, &file_stat) == 0) {
@@ -84,15 +88,16 @@ int display_files(const char *directory, int startline_idx, int highlighted_idx)
             strftime(mod_time, sizeof(mod_time), "%Y-%m-%d %H:%M", localtime(&file_stat.st_mtime));
 
             // 하이라이트 처리
-            if (i == highlighted_idx) {
+            if (file_idx == highlighted_idx) {
                 attron(A_REVERSE);
             }
 
-            mvprintw(j, 0, ""); // 줄 시작 위치로 이동 출력
-            print_trimmed(filelist[i]->d_name, 30); // 파일 이름 (최대 30칸)
-            mvprintw(j, 30, "%-10s %-10ld %-20s", kind, file_stat.st_size, mod_time); // 나머지 출력
+            //mvprintw(current_screenY, 0, ""); // 줄 시작 위치로 이동 출력
+            move(current_screenY, 0); // 커서 이동
+            print_trimmed(filelist[file_idx]->d_name, 30); // 파일 이름 (최대 30칸)
+            mvprintw(current_screenY, 30, "%-10s %-10ld %-20s", kind, file_stat.st_size, mod_time); // 나머지 출력
 
-            if (i == highlighted_idx) {
+            if (file_idx == highlighted_idx) {
                 attroff(A_REVERSE);
             }
         }
@@ -100,7 +105,7 @@ int display_files(const char *directory, int startline_idx, int highlighted_idx)
 
     // 하단 라인 출력
     mvprintw(screen_height - 3, 0, "-------------------------------------------");
-    mvprintw(screen_height - 2, 0, " Copy(C)  Cut(X) Paste(V) View(L) Edit(E) Execute(R)");
+    mvprintw(screen_height - 2, 0, "Quit(Q)  Copy(C)  Cut(X) Paste(V) View(L) Edit(E) Execute(R)");
     mvprintw(screen_height - 1, 0, "======================");
 
     // 메모리 해제

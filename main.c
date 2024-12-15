@@ -4,12 +4,14 @@
 #include <ncurses.h>
 #include <locale.h>
 
+#define RESERVED_LINE_NO 7 // UI를 위해 남겨 둬야 할 라인 수
+
 // display.c에서 제공하는 함수 선언
 int display_files(const char *directory, int startline_idx, int highlighted_idx);
 
 char current_dir[1024] = "~"; // 초기 디렉토리 설정
-int highlighted_idx = 0;     // 선택된 파일 인덱스
-int startline_idx = 0;       // 출력 시작 줄 인덱스
+int highlighted_idx = 0;     // 파일 리스트 중 선택된 파일 인덱스, 0 - filecount-1
+int print_start_idx = 0;     // 파일 리스트 중 출력 시작 줄 인덱스 0 - filecount-1
 
 int main() {
     setlocale(LC_ALL, "");
@@ -30,7 +32,7 @@ int main() {
         clear();
 
         // 파일 출력 및 파일 개수 반환
-        int file_count = display_files(current_dir, startline_idx, highlighted_idx);
+        int file_count = display_files(current_dir, print_start_idx, highlighted_idx);
 
         // 키 입력 처리
         int ch = getch();
@@ -42,16 +44,16 @@ int main() {
             case KEY_UP:
                 if (highlighted_idx > 0) {
                     highlighted_idx--;
-                    if (highlighted_idx < startline_idx) {
-                        startline_idx--;
+                    if (highlighted_idx < print_start_idx) {
+                        print_start_idx--;
                     }
                 }
                 break;
             case KEY_DOWN:
                 if (highlighted_idx < file_count - 1) {
                     highlighted_idx++;
-                    if (highlighted_idx >= startline_idx + screen_height - 4) {
-                        startline_idx++;
+                    if (highlighted_idx - print_start_idx == screen_height - RESERVED_LINE_NO - 1) { // higlighted_idx가 라인 끝이면
+                        print_start_idx++;
                     }
                 }
                 break;

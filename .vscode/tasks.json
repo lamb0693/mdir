@@ -11,7 +11,9 @@
                 "display.c",
                 "-o",
                 "${fileDirname}/program",
-                "-lncursesw"
+                "-lncursesw",
+                "-D_XOPEN_SOURCE=600",
+                "-D_DEFAULT_SOURCE"
             ],
             "group": {
                 "kind": "build",
@@ -32,7 +34,9 @@
                 "display.c",
                 "-o",
                 "${fileDirname}/${fileBasenameNoExtension}",
-                "-lncursesw"
+                "-lncursesw",
+                "-D_XOPEN_SOURCE=600",
+                "-D_DEFAULT_SOURCE"
             ],
             "options": {
                 "cwd": "${fileDirname}"
