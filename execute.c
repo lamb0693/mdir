@@ -7,8 +7,7 @@
 #include <dirent.h>
 #include <sys/stat.h>
 
-#define MAX_DIR_LENGTH 1024
-#define MAX_FILENAME_LENGTH 256
+#include "project_macro.h"
 
 
 // return 99 -  current_dir changed 

@@ -8,10 +8,10 @@
 #include <wchar.h>
 #include <ncurses.h>
 
-#define RESERVED_LINE_UPPER 5 // UI 화면 윗부분
-#define RESERVED_LINE_LOWER 3 // UI 화면 아랫부분
+#include "project_macro.h"
 
-// 문자열을 지정된 길이로 자르고 출력
+// 문자열을 지정된 길이로 자르고 출력,  chatGPT  제작 함수임
+// 한글과 영문이 같은 넓이를 차지하도록 조절해서 max_width 길이의 string을 출력
 void print_trimmed(const char *str, int max_width) {
     setlocale(LC_ALL, ""); // UTF-8 지원 설정
     int width = 0;         // 현재 출력 너비
@@ -44,14 +44,15 @@ void print_trimmed(const char *str, int max_width) {
     }
 }
 
-int custom_alphasort(const struct dirent **a, const struct dirent **b) {
+int sort_by_name(const struct dirent **a, const struct dirent **b) {
     return strcmp((*a)->d_name, (*b)->d_name);
 }
 
 // 디렉토리의 파일 정보를 출력하는 함수
-int display_files(const char *directory, int print_start_idx, int highlighted_idx, char *selected_filename, size_t filename_size) {
+int display_files(const char *directory,const int print_start_idx, const int highlighted_idx, char *selected_filename, size_t filename_size) {
     struct dirent **filelist = NULL;
-    int file_count = scandir(directory, &filelist, NULL, custom_alphasort);
+    // scandir(dir, filelist, filter_function-조건해당 파일만, sort_function-정렬기준)
+    int file_count = scandir(directory, &filelist, NULL, sort_by_name);
 
     if (file_count < 0) {
         mvprintw(1, 0, "Error reading directory: %s", directory);
@@ -72,7 +73,7 @@ int display_files(const char *directory, int print_start_idx, int highlighted_id
     // 파일 리스트 출력
     int print_start_screenY = RESERVED_LINE_UPPER; // 파일 리스트 시작 줄 (헤더 이후),  (0 부터 screen_hight -1)
     int print_end_screenY = screen_height -  RESERVED_LINE_LOWER -1  ; // 하단 메뉴와 구분선 고려 (0부터 screen_height-1 기준)
-    int current_screenY = print_start_screenY;
+    int current_screenY = print_start_screenY; // 현재 출력할 y 좌표
 
     for (int file_idx = print_start_idx; file_idx < file_count && current_screenY <= print_end_screenY; file_idx++, current_screenY++) {
         struct stat file_stat;
@@ -92,6 +93,7 @@ int display_files(const char *directory, int print_start_idx, int highlighted_id
                 attron(A_REVERSE);
             
                 // 선택된 파일 이름 저장
+                // strncpy는 strcpy와 달리 overflow는 없지만,  복사할 내용이 너무 길면 \0  이 없을 수 있어  마지막에 \0 추가해줌
                 strncpy(selected_filename, filelist[file_idx]->d_name, filename_size - 1);
                 selected_filename[filename_size - 1] = '\0'; // 널 종단
             }
